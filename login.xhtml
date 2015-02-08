@@ -1,0 +1,170 @@
+<!DOCTYPE html [
+    <!ENTITY nbsp "&#160;">
+    <!ENTITY bull "&#8226;">
+    <!ENTITY copy "&#169;">
+]> 
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+	<f:view contentType="text/html">
+		<h:head>
+			<h:outputStylesheet name="main/css/showcase.css" />
+			<h:outputStylesheet name="main/css/sh.css" />
+			<style type="text/css">
+            body {
+                background-color: #FFFFFF;
+            }
+			</style>
+			<script type="text/javascript">
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-12200033-1']);
+            _gaq.push(['_trackPageview']);
+
+            (function() {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+			</script>
+		</h:head>
+
+	<h:body onload="PF('dlg').show()">
+		<h:form id="mainForm">            
+			
+ 
+			<p:growl id="growl"  showDetail="true" life="3000" />
+
+<p:tabView id="mainTab" rendered="#{loginBean.loggedIn}">
+        <p:tab title="Services" id="serviceTab" tooltip="Services Tab" >
+			
+	<p:dataTable id="singleDT"  var="service" rendered="#{loginBean.loggedIn}" value="#{envService.list}" selectionMode="single" selection="#{envService.selectedService}"  rowKey="#{service.serviceName}">
+        <f:facet name="header">
+            Single with Row Click
+        </f:facet>
+         <p:column selectionMode="single" style="width:16px;text-align:center"/>
+        <p:column headerText="Id">
+            <h:outputText value="#{service.serviceName}" />
+        </p:column>
+        <p:column headerText="Year">
+            <h:outputText value="#{service.env}" />
+        </p:column>
+        <p:column headerText="Brand">
+            <h:outputText value="#{service.serverName}" />
+        </p:column>
+        <p:column headerText="Color">
+            <h:outputText value="#{service.serviceDesc}" />
+        </p:column>
+        <f:facet name="footer">
+            <p:commandButton process="singleDT" update=":mainForm:carDetail" actionListener="#{envService.update}"  icon="ui-icon-search" value="View" oncomplete="PF('carDialog').show()" />
+        </f:facet>
+    </p:dataTable>
+        </p:tab>
+        
+       <p:tab id="eventTab" rendered="#{loginBean.loggedIn}" title="Events">
+       	
+       	                <h3 style="margin-top: 0">Editable Schedule</h3>
+                <p:schedule id="schedule" value="#{scheduleView.eventModel}" widgetVar="myschedule" timeZone="GMT+2" >
+
+                    <p:ajax event="dateSelect" listener="#{scheduleView.onDateSelect}" update=":mainForm:eventDetails" oncomplete="PF('eventDialog').show();" />
+                    <p:ajax event="eventSelect" listener="#{scheduleView.onEventSelect}" update=":mainForm:eventDetails" oncomplete="PF('eventDialog').show();" />
+                    <p:ajax event="eventMove" listener="#{scheduleView.onEventMove}" update=":mainForm:growl" />
+                    <p:ajax event="eventResize" listener="#{scheduleView.onEventResize}" update=":mainForm:growl" />
+
+                </p:schedule>
+       	
+       	
+       	
+       </p:tab>
+        
+        
+        
+</p:tabView>  
+
+            <p:dialog widgetVar="eventDialog" header="Event Details" rendered="#{loginBean.loggedIn}" showEffect="clip" hideEffect="clip">
+                <h:panelGrid id="eventDetails" columns="2">
+                    <h:outputLabel for="title" value="Title:" />
+                    <p:inputText id="title" value="#{scheduleView.event.title}" required="true" />
+
+                    <h:outputLabel for="from" value="From:" />
+                    <p:inputMask id="from" value="#{scheduleView.event.startDate}" mask="99/99/9999">
+                        <f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+2"/>
+                    </p:inputMask>
+
+                    <h:outputLabel for="to" value="To:" />
+                    <p:inputMask id="to" value="#{scheduleView.event.endDate}" mask="99/99/9999">
+                        <f:convertDateTime pattern="dd/MM/yyyy" timeZone="GMT+2"/>
+                    </p:inputMask>
+
+                    <h:outputLabel for="allDay" value="All Day:" />
+                    <h:selectBooleanCheckbox id="allDay" value="#{scheduleView.event.allDay}" />
+
+                    <p:commandButton type="reset" value="Reset" />
+                    <p:commandButton id="addButton" value="Save" actionListener="#{scheduleView.addEvent}" oncomplete="PF('myschedule').update();PF('eventDialog').hide();" />
+                </h:panelGrid>
+            </p:dialog> 
+            
+            
+    <p:dialog header="Car Info" rendered="#{loginBean.loggedIn}" widgetVar="carDialog" modal="true" showEffect="fade" hideEffect="fade" resizable="false">
+        <p:outputPanel id="carDetail" style="text-align:center;">
+			<p:log id="log"   />
+            <p:panelGrid  columns="2" rendered="#{not empty envService.selectedService}" columnClasses="label,value">
+                
+                <h:outputText value="Id:" />
+                <h:outputText value="#{envService.selectedService.serviceName}" />
+            </p:panelGrid>
+        </p:outputPanel>
+    </p:dialog>
+
+ 
+			<p:dialog header="Login" widgetVar="dlg" resizable="false" rendered="#{!loginBean.loggedIn}" >
+
+				<p:graphicImage name="/resources/demo/images/login.png" />
+				<h:panelGrid columns="2" cellpadding="5">
+					<h:outputLabel for="username" value="Username:" />
+					<p:inputText id="username" value="#{loginBean.username}" required="true" label="username" />
+ 
+					<h:outputLabel for="password" value="Password:" />
+					<p:password id="password" value="#{loginBean.password}" required="true" label="password" />
+ 
+					<f:facet name="footer">
+						<p:commandButton value="Login"  update="growl,mainForm:singleDT"  actionListener="#{loginBean.login}"
+							oncomplete="handleLoginRequest(xhr, status, args)" ajax="false" />
+					</f:facet>  
+				</h:panelGrid>
+			</p:dialog>
+		</h:form>
+		
+
+
+
+
+
+
+
+
+			<script language="javascript" src="#{request.contextPath}/resources/main/js/sh.js"></script>
+			<script language="javascript">
+                SyntaxHighlighter.all();
+			</script>
+			<script type="text/javascript">
+    function handleLoginRequest(xhr, status, args) {
+        if(args.validationFailed || !args.loggedIn) {
+            PF('dlg').jq.effect("shake", {times:5}, 100);
+        }
+        else {
+        alert(args.loggedIn)
+             PF('dlg').hide();
+            $('#loginLink').fadeOut();
+        }
+    }
+			</script>
+		</h:body>
+
+	</f:view>
+    
+    
+</html>
+
